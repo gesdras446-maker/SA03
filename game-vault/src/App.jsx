@@ -23,6 +23,7 @@ function App() {
     return salvos ? JSON.parse(salvos) : JOGOS_INICIAIS;
   });
   const [filtro, setFiltro] = useState("todas");
+  const [anuncio, setAnuncio] = useState("");
 
   useEffect(() => {
     localStorage.setItem("gamevault-jogos", JSON.stringify(jogos));
@@ -43,42 +44,68 @@ function App() {
       concluida: novo.status === "Zerado",
     };
     setJogos((atual) => [jogo, ...atual]);
+    setAnuncio(`Jogo "${novo.titulo}" adicionado.`);
   }
 
   function alternarZerado(id) {
+    const jogo = jogos.find((j) => j.id === id);
+    if (!jogo) return;
+    const vaiConcluir = !jogo.concluida;
+    const statusTexto = vaiConcluir ? "zerado" : "pendente";
     setJogos((atual) =>
       atual.map((j) => (j.id === id ? { ...j, concluida: !j.concluida } : j))
     );
+    setAnuncio(`Jogo "${jogo.titulo}" marcado como ${statusTexto}.`);
   }
 
   function removerJogo(id) {
+    const jogo = jogos.find((j) => j.id === id);
     setJogos((atual) => atual.filter((j) => j.id !== id));
+    if (jogo) {
+      setAnuncio(`Jogo "${jogo.titulo}" removido.`);
+    }
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white font-sans">
+      {/* Skip link: só aparece quando recebe foco via Tab (primeiro item interativo da página) */}
+      <a
+        href="#conteudo"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:text-slate-900 focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg font-bold"
+      >
+        Pular para o conteúdo
+      </a>
+
       <Header />
-      <main className="flex-1 max-w-2xl w-full mx-auto p-6 flex flex-col items-center">
-        <h2 className="text-lg font-bold tracking-wider uppercase mt-4 mb-2 text-center">
+
+      {/* Região aria-live para leitores de tela anunciarem atualizações de estado */}
+      <div aria-live="polite" role="status" className="sr-only">
+        {anuncio}
+      </div>
+
+      <main id="conteudo" className="flex-1 max-w-2xl w-full mx-auto p-6 flex flex-col items-center">
+        <h2 className="text-lg font-bold tracking-wider uppercase mt-4 mb-2 text-center text-white">
           CATÁLOGO DE JOGOS
         </h2>
-        <hr className="w-full border-slate-200 mb-6" />
+        <hr className="w-full border-slate-700 mb-6" />
 
         <div className="w-full mb-6">
           <TaskForm onAdicionar={adicionarJogo} />
         </div>
 
         <div className="w-full flex items-center justify-between mb-4">
-          <span className="text-sm text-slate-300">Jogos: {jogos.length}</span>
-          <div className="flex gap-2">
+          <span className="text-sm text-slate-300 font-medium">Jogos: {jogos.length}</span>
+          <div role="group" aria-label="Filtrar jogos" className="flex gap-2">
             {FILTROS.map((opcao) => (
               <button
                 key={opcao.valor}
+                type="button"
                 onClick={() => setFiltro(opcao.valor)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                aria-pressed={filtro === opcao.valor}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
                   filtro === opcao.valor
                     ? "bg-emerald-700 text-white"
-                    : "bg-white text-slate-600 hover:bg-slate-200"
+                    : "bg-white text-slate-800 hover:bg-slate-200"
                 }`}
               >
                 {opcao.rotulo}
