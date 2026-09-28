@@ -3,6 +3,8 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import TaskForm from "./components/TaskForm";
 import TaskCard from "./components/TaskCard";
+import StatusRede from "./components/StatusRede";
+import InstallPrompt from "./components/InstallPrompt";
 
 const FILTROS = [
   { valor: "todas", rotulo: "Todas" },
@@ -68,7 +70,6 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white font-sans">
-      {/* Skip link: só aparece quando recebe foco via Tab (primeiro item interativo da página) */}
       <a
         href="#conteudo"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:text-slate-900 focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg font-bold"
@@ -77,8 +78,9 @@ function App() {
       </a>
 
       <Header />
+      <StatusRede />
+      <InstallPrompt />
 
-      {/* Região aria-live para leitores de tela anunciarem atualizações de estado */}
       <div aria-live="polite" role="status" className="sr-only">
         {anuncio}
       </div>
