@@ -5,6 +5,9 @@ import TaskForm from "./components/TaskForm";
 import TaskCard from "./components/TaskCard";
 import StatusRede from "./components/StatusRede";
 import InstallPrompt from "./components/InstallPrompt";
+import NotificationPrompt from "./components/NotificationPrompt";
+import { notificarLocal } from "./notifications";
+import { agendarSincronizacao } from "./backgroundSync";
 
 const FILTROS = [
   { valor: "todas", rotulo: "Todas" },
@@ -31,6 +34,19 @@ function App() {
     localStorage.setItem("gamevault-jogos", JSON.stringify(jogos));
   }, [jogos]);
 
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+
+    function aoReceberMensagem(evento) {
+      if (evento.data?.tipo === "SINCRONIZADO") {
+        setAnuncio("🔄 Sincronização em segundo plano concluída.");
+      }
+    }
+
+    navigator.serviceWorker.addEventListener("message", aoReceberMensagem);
+    return () => navigator.serviceWorker.removeEventListener("message", aoReceberMensagem);
+  }, []);
+
   const jogosFiltrados = jogos.filter((j) => {
     if (filtro === "jogando") return j.status === "Jogando";
     if (filtro === "zerados") return j.concluida === true;
@@ -47,6 +63,11 @@ function App() {
     };
     setJogos((atual) => [jogo, ...atual]);
     setAnuncio(`Jogo "${novo.titulo}" adicionado.`);
+
+    if (!navigator.onLine) {
+      agendarSincronizacao("sincronizar-tarefas");
+      setAnuncio((atual) => `${atual} A sincronização ocorrerá quando a conexão voltar.`);
+    }
   }
 
   function alternarZerado(id) {
@@ -54,10 +75,17 @@ function App() {
     if (!jogo) return;
     const vaiConcluir = !jogo.concluida;
     const statusTexto = vaiConcluir ? "zerado" : "pendente";
+
     setJogos((atual) =>
       atual.map((j) => (j.id === id ? { ...j, concluida: !j.concluida } : j))
     );
     setAnuncio(`Jogo "${jogo.titulo}" marcado como ${statusTexto}.`);
+
+    if (vaiConcluir && jogo.concluida === false) {
+      notificarLocal("Boa! Jogo zerado 🎉", {
+        body: jogo.titulo,
+      });
+    }
   }
 
   function removerJogo(id) {
@@ -65,6 +93,11 @@ function App() {
     setJogos((atual) => atual.filter((j) => j.id !== id));
     if (jogo) {
       setAnuncio(`Jogo "${jogo.titulo}" removido.`);
+    }
+
+    if (!navigator.onLine) {
+      agendarSincronizacao("sincronizar-tarefas");
+      setAnuncio((atual) => `${atual} A sincronização ocorrerá quando a conexão voltar.`);
     }
   }
 
@@ -80,6 +113,7 @@ function App() {
       <Header />
       <StatusRede />
       <InstallPrompt />
+      <NotificationPrompt />
 
       <div aria-live="polite" role="status" className="sr-only">
         {anuncio}

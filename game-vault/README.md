@@ -1,16 +1,36 @@
-# React + Vite
+# Game Vault
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Projeto de catálogo de jogos com suporte a instalação, funcionamento offline e recursos de notificação em segundo plano.
 
-Currently, two official plugins are available:
+## Recursos implementados
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Instalação como app no dispositivo
+- Funcionamento offline com Service Worker
+- Notificações locais do navegador
+- Preparação para Push API e Background Sync
+- Otimização de carregamento da fonte Sora via `dns-prefetch` e `preconnect`
 
-## React Compiler
+## Observações importantes
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Notificações push
 
-## Expanding the ESLint configuration
+O fluxo de `pushManager.subscribe()` depende de infraestrutura do navegador e pode falhar em redes corporativas, VPNs, modos anônimo ou ambientes com bloqueadores. Esse comportamento é esperado e não significa que o restante do app esteja quebrado. A notificação local continua funcionando normalmente.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Background Sync
+
+O evento `sync` é disparado pelo próprio navegador quando a conexão volta. Isso pode levar alguns segundos ou até não disparar imediatamente em todos os ambientes, porque a decisão é controlada pelo navegador e não pelo código do app.
+
+### Fonte externa
+
+A fonte `Sora` é carregada do Google Fonts, com fallback para fontes do sistema em caso de rede indisponível. A aparência pode mudar dependendo da disponibilidade da internet, mas o layout continua legível e estável.
+
+## Como testar
+
+1. Rode `npm install` se necessário.
+2. Execute `npm run build` para validar o build.
+3. Use `npm run preview` para simular a build final.
+4. Teste a permissão de notificações e o fluxo de sincronização em segundo plano em um navegador compatível.
+
+## Aviso
+
+Alguns recursos dependem de fatores fora do controle do código, como suporte do navegador, rede e permissões do usuário. Quando isso acontecer, o ideal é documentar a limitação e manter a experiência funcional localmente.

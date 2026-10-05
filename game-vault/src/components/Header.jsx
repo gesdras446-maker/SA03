@@ -6,7 +6,7 @@ function Header() {
 
   return (
     <header className="bg-[#70003c] text-white px-6 py-4 shadow-md flex items-center justify-between border-b border-rose-950">
-      <h1 className="text-2xl md:text-3xl font-bold tracking-wide">
+      <h1 className="text-2xl md:text-3xl font-bold tracking-wide font-display">
         Kyōkotsu
       </h1>
 
